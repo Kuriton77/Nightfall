@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Nightfall — Survivor</title>
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div id="top-bar">
+        <div class="hud-group">
+          <div id="level-badge"><span id="level-text">LV 1</span></div>
+          <div id="difficulty-badge">NORMAL</div>
+        </div>
+        <div id="timer-text">00:00</div>
+        <div class="hud-group">
+          <div id="aim-indicator">AUTO AIM</div>
+          <div id="kills-badge">☠ <span id="kills-text">0</span></div>
+        </div>
+      </div>
+
+      <div id="xp-bar" class="bar">
+        <div id="xp-fill" class="fill"></div>
+      </div>
+
+      <!-- Boss health bar (top center, boss fights only) -->
+      <div id="boss-bar-wrap" class="hidden">
+        <div id="boss-name">BOSS</div>
+        <div id="boss-bar" class="bar">
+          <div id="boss-fill" class="fill"></div>
+        </div>
+      </div>
+
+      <!-- Active buffs / status effects (auto-populated) -->
+      <div id="buff-bar"></div>
+
+      <div id="health-bar-wrap">
+        <div id="health-bar" class="bar">
+          <div id="health-fill" class="fill"></div>
+        </div>
+        <div id="health-text">100 / 100</div>
+      </div>
+
+      <!-- Dash cooldown indicator -->
+      <div id="dash-wrap">
+        <div id="dash-bar" class="bar">
+          <div id="dash-fill" class="fill"></div>
+        </div>
+        <div id="dash-label">DASH READY</div>
+      </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="main-menu" class="overlay hidden">
+      <div class="menu-panel">
+        <div class="title-block">
+          <h1 class="game-title">NIGHTFALL</h1>
+          <p class="game-subtitle">SURVIVOR</p>
+        </div>
+        <div class="menu-buttons">
+          <button id="menu-play-btn" class="btn btn-primary">PLAY</button>
+          <button id="menu-weapons-btn" class="btn">WEAPONS</button>
+          <button id="menu-settings-btn" class="btn">SETTINGS</button>
+          <button id="menu-quit-btn" class="btn btn-ghost">QUIT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode Select -->
+    <div id="mode-select" class="overlay hidden">
+      <div class="menu-panel wide-panel">
+        <h1 class="panel-heading accent">SELECT MODE</h1>
+        <p class="panel-subtitle">Choose your survival challenge</p>
+        <div id="mode-options" class="card-row"></div>
+        <div class="menu-buttons">
+          <button id="mode-back-btn" class="btn btn-ghost">BACK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Difficulty Select -->
+    <div id="difficulty-select" class="overlay hidden">
+      <div class="menu-panel wide-panel">
+        <h1 class="panel-heading accent">SELECT DIFFICULTY</h1>
+        <p class="panel-subtitle">How hard will the night be?</p>
+        <div id="difficulty-options" class="card-row"></div>
+        <div class="menu-buttons">
+          <button id="difficulty-back-btn" class="btn btn-ghost">BACK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weapon Select -->
+    <div id="weapon-select" class="overlay hidden">
+      <div class="menu-panel wide-panel">
+        <h1 class="panel-heading accent">WEAPONS</h1>
+        <p class="panel-subtitle">Select your starting weapon</p>
+        <div id="weapon-options" class="card-row"></div>
+        <div class="menu-buttons">
+          <button id="weapon-back-btn" class="btn btn-ghost">BACK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory -->
+    <div id="victory-screen" class="overlay hidden">
+      <div class="menu-panel">
+        <h1 class="panel-heading accent">VICTORY</h1>
+        <p class="panel-subtitle">You survived the night.</p>
+        <div class="summary victory-summary">
+          <div><span class="label">Time</span><span id="victory-time">00:00</span></div>
+          <div><span class="label">Level</span><span id="victory-level">1</span></div>
+          <div><span class="label">Kills</span><span id="victory-kills">0</span></div>
+          <div><span class="label">XP</span><span id="victory-xp">0</span></div>
+          <div><span class="label">Weapon</span><span id="victory-weapon">—</span></div>
+          <div><span class="label">Mode</span><span id="victory-mode">—</span></div>
+          <div><span class="label">Difficulty</span><span id="victory-difficulty">—</span></div>
+        </div>
+        <div class="menu-buttons row">
+          <button id="victory-again-btn" class="btn btn-primary">PLAY AGAIN</button>
+          <button id="victory-menu-btn" class="btn">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause Menu -->
+    <div id="pause-menu" class="overlay hidden">
+      <div class="menu-panel">
+        <h1 class="panel-heading">PAUSED</h1>
+        <div class="menu-buttons">
+          <button id="pause-resume-btn" class="btn btn-primary">RESUME</button>
+          <button id="pause-settings-btn" class="btn">SETTINGS</button>
+          <button id="pause-menu-btn" class="btn btn-ghost">RETURN TO MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="settings-menu" class="overlay hidden">
+      <div class="menu-panel settings-panel">
+        <h1 class="panel-heading">SETTINGS</h1>
+
+        <div class="settings-group">
+          <span class="settings-group-label">Audio</span>
+
+          <div class="setting-row">
+            <label for="master-volume">Master Volume</label>
+            <div class="control">
+              <input id="master-volume" type="range" min="0" max="100" value="80" />
+              <span id="master-volume-value" class="value">80%</span>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <label for="music-volume">Music Volume</label>
+            <div class="control">
+              <input id="music-volume" type="range" min="0" max="100" value="50" />
+              <span id="music-volume-value" class="value">50%</span>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <label for="sfx-volume">SFX Volume</label>
+            <div class="control">
+              <input id="sfx-volume" type="range" min="0" max="100" value="80" />
+              <span id="sfx-volume-value" class="value">80%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <span class="settings-group-label">Display</span>
+
+          <div class="setting-row">
+            <label for="resolution-select">Resolution</label>
+            <div class="control">
+              <select id="resolution-select"></select>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <label for="fullscreen-toggle">Fullscreen</label>
+            <div class="control">
+              <label class="switch">
+                <input id="fullscreen-toggle" type="checkbox" />
+                <span class="slider-track"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <label for="vsync-toggle">VSync</label>
+            <div class="control">
+              <label class="switch">
+                <input id="vsync-toggle" type="checkbox" checked />
+                <span class="slider-track"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-buttons">
+          <button id="settings-back-btn" class="btn btn-primary">BACK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level-up upgrade selection -->
+    <div id="upgrade-screen" class="overlay hidden">
+      <div class="menu-panel">
+        <h1 class="panel-heading accent">LEVEL UP</h1>
+        <p class="panel-subtitle">Choose an upgrade — press 1, 2, or 3</p>
+        <div id="upgrade-options"></div>
+      </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="gameover-screen" class="overlay hidden">
+      <div class="menu-panel">
+        <h1 class="panel-heading danger">YOU DIED</h1>
+        <div class="summary">
+          <div><span class="label">Survived</span><span id="final-time">00:00</span></div>
+          <div><span class="label">Level</span><span id="final-level">1</span></div>
+          <div><span class="label">Kills</span><span id="final-kills">0</span></div>
+          <div><span class="label">Difficulty</span><span id="final-difficulty">—</span></div>
+        </div>
+        <div class="menu-buttons">
+          <button id="restart-btn" class="btn btn-primary">RESTART</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quit fallback (browsers block window.close on non-script windows) -->
+    <div id="quit-screen" class="overlay hidden">
+      <div class="menu-panel">
+        <h1 class="panel-heading">THANKS FOR PLAYING</h1>
+        <p class="panel-subtitle">You can safely close this tab.</p>
+      </div>
+    </div>
+
+    <!-- Controls hint -->
+    <div id="controls-hint" class="hidden">
+      WASD / Arrows to move · SPACE toggles aim · ESC to pause
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
